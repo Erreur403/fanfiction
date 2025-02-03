@@ -16,10 +16,10 @@ return new class extends Migration
             $table->string('titre');
             $table->text('resume');
             $table->string('couverture');
-            $table->enum('statut', ['Publier', 'Brouillon']);
-            $table->enum('progression', ['EnCours', 'Inachever', 'Terminer']);
+            $table->enum('statut', ['Publier', 'Brouillon'])->nullable();
+            $table->enum('progression', ['EnCours', 'Inachever', 'Terminer'])->default('EnCours');
             $table->integer('restriction_age')->nullable();
-            $table->string('mot_cles');
+            $table->string('mot_cles')->nullable();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });

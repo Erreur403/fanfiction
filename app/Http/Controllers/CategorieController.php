@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 class CategorieController extends Controller
 {
     //
+//début controller gaël
     public function getCategoriesForStory($histoireId)
     {
       /*  // Récupérer les ID des catégories liées à l'histoire donnée
@@ -93,5 +94,6 @@ class CategorieController extends Controller
     }
 
     } 
+//fin gael
 
 }

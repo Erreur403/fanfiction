@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('chapitres', function (Blueprint $table) {
             $table->id();
             $table->foreignId('histoire_id')->constrained('histoires')->onDelete('cascade');
+            $table->enum('statut', ['Publier', 'Brouillon'])->default('Brouillon');
             $table->integer('numero');
             $table->string('titre');
             $table->json('content');

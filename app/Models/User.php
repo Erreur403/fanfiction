@@ -3,6 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * @property integer $id
@@ -25,8 +29,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property Notification[] $notifications
  * @property UserAction[] $userActions
  */
-class User extends Model
+class User extends Authenticatable
 {
+    use HasApiTokens, HasFactory, Notifiable;
     /**
      * @var array
      */
@@ -103,4 +108,26 @@ class User extends Model
     {
         return $this->hasMany('App\Models\UserAction');
     }
+
+    /**
+     * Les attributs cachés pour les tableaux JSON.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+        'email_verified_at',
+    ];
+
+    /**
+     * Les attributs devant être convertis en types natifs.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
+
 }
