@@ -7,6 +7,7 @@ use App\Models\Histoire;
 use App\Models\Chapitre;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Models\CategorieHistoire;
 
 class HistoireController extends Controller
 {
@@ -139,6 +140,7 @@ public function getLatestStory()
         'titre' => 'required',
         'resume' => 'required', 
         'couverture' => 'required', 
+        'categories' =>'required',
     ]);
 
     try {
@@ -151,13 +153,28 @@ public function getLatestStory()
  
         ]);
 
+        $categories = $request->get('categories'); 
+
+        if (!is_array($categories)) {
+            return response()->json(['message' => 'Format invalide'], 400);
+        }
+    
+        // Boucler sur les nouvelles catégories et les insérer
+        
+        foreach ($categories as $categorie) {
+            CategorieHistoire::create([
+                'histoire_id' => $histoire->id,
+                'categorie_id' => $categorie,
+            ]);
+        }
+
         return response()->json(['message' => 'histoire publié avec succès.', 'data' => $histoire->id], 200);
     } catch (\Exception $e) {
         return response()->json(['message' => 'Erreur lors de la publication de l\'histoire.','error' => $e->getMessage()], 500);
     }
 }
 
-public function deleteStory($id)
+/*public function deleteStory($id)
 {
     try {
         $histoire = Histoire::findOrFail($id);
@@ -173,6 +190,86 @@ public function deleteStory($id)
             'message' => "Erreur lors de la suppression de l'histoire",
             'error' => $e->getMessage()
         ], 500);
+    }
+}*/
+
+public function deleteStory($id)
+{
+    try {
+        $histoire = Histoire::findOrFail($id);
+        $chapitres = Chapitre::where('histoire_id', $id)->get();
+
+        foreach ($chapitres as $chapitre) {
+            $chapitre->supprimerImages(); // Supprimer les images du chapitre
+            $chapitre->delete(); // Supprimer le chapitre
+        }
+
+        $histoire->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Histoire et ses chapitres supprimés avec succès'
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => "Erreur lors de la suppression de l'histoire",
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+public function getOtherChapterWithStory($id)
+{
+    try {
+        // Récupérer le chapitre par son ID
+        $chapitre = Chapitre::find($id);
+
+        // Vérifier si le chapitre existe
+        if (!$chapitre) {
+            return response()->json([
+                'message' => 'Chapitre introuvable.',
+            ], 404); // 404 Not Found
+        }
+
+        // Récupérer l'histoire associée au chapitre
+        $histoire = $chapitre->histoire;
+
+        // Vérifier si l'histoire existe
+        if (!$histoire) {
+            return response()->json([
+                'message' => 'Histoire introuvable pour ce chapitre.',
+            ], 404); // 404 Not Found
+        }
+
+        // Récupérer les informations de l'histoire
+        $histoireData = [
+            'id' => $histoire->id,
+            'titre' => $histoire->titre,
+            'couverture' => $histoire->couverture,
+        ];
+
+        // Récupérer les autres chapitres publiés de cette histoire (sauf le chapitre actuel)
+        $autresChapitres = Chapitre::where('histoire_id', $histoire->id)
+            ->where('statut', 'Publier') // Filtrer par statut "publié"
+            ->select('id', 'numero', 'titre') // Sélectionner uniquement les champs nécessaires
+            ->orderBy('numero') // Trier par numéro de chapitre
+            ->get();
+
+        // Retourner les données au format JSON
+        return response()->json([
+            'message' => 'Données récupérées avec succès.',
+            'data' => [
+                'histoire' => $histoireData,
+                'chapitres' => $autresChapitres,
+            ],
+        ], 200); // 200 OK
+    } catch (\Exception $e) {
+        // Gérer toute erreur
+        return response()->json([
+            'message' => 'Erreur lors de la récupération des données.',
+            'error' => $e->getMessage(),
+        ], 500); // 500 Internal Server Error
     }
 }
 

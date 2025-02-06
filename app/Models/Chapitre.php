@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @property integer $id
@@ -62,5 +63,41 @@ class Chapitre extends Model
     public function userActions()
     {
         return $this->hasMany('App\Models\UserAction');
+    }
+
+    /**
+     * Extraire les URLs des images du contenu JSON.
+     *
+     * @return array
+     */
+    public function extraireUrlsImages(): array
+    {
+        $contenu = json_decode($this->content, true);
+        $images = [];
+
+        foreach ($contenu as $bloc) {
+            if (isset($bloc['insert']['image'])) {
+                $images[] = $bloc['insert']['image'];
+            }
+        }
+
+        return $images;
+    }
+
+    /**
+     * Supprimer les images associées à ce chapitre.
+     */
+    public function supprimerImages(): void
+    {
+        $images = $this->extraireUrlsImages();
+
+        foreach ($images as $imageUrl) {
+            $baseUrl = url('/') . '/storage/';
+            $relativePath = str_replace($baseUrl, '', $imageUrl);
+
+            if (Storage::disk('public')->exists($relativePath)) {
+                Storage::disk('public')->delete($relativePath);
+            }
+        }
     }
 }

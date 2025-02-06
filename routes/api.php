@@ -31,18 +31,21 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //
 Route::post('/upload-image', [ChapitreController::class, 'uploadImage']);  //permet d'insérer des images dans le storage/public
 //
-Route::middleware('auth:sanctum')->get('/categories', [TestController::class, 'index']); // Afficher toutes les catégories
-Route::middleware('auth:sanctum')->post('/categories', [TestController::class, 'store']); // Ajouter une catégorie
+//Route::get('/categories', [CategorieController::class, 'getCategoriesIndex']); // Afficher toutes les catégories
+Route::middleware('auth:sanctum')->get('/categories', [CategorieController::class, 'getCategoriesIndex']); // Afficher toutes les catégories
+Route::middleware('auth:sanctum')->post('/categories', [CategorieController::class, 'storeCategoriesHistoire']); // sauvegarder les catégories d'une histoire
 //
 Route::middleware('auth:sanctum')->post('/chapitres', [ChapitreController::class, 'storeChapitre']); //enregistrer un chapitre
 Route::middleware('auth:sanctum')->post('/update/chapitre', [ChapitreController::class, 'updateChapitre']); 
 Route::middleware('auth:sanctum')->get('/chapitres/{id}', [ChapitreController::class, 'getChapitre']);
+Route::middleware('auth:sanctum')->get('/lecture/chapitre/{id}', [ChapitreController::class, 'lectureChapitre']); //lecture
 Route::middleware('auth:sanctum')->post('/delete/chapitre/{id}', [ChapitreController::class, 'destroy']);
 //
 Route::middleware('auth:sanctum')->get('/histoire', [HistoireController::class, 'edit']); //afficher les informations d'une histoire pour modification
 Route::middleware('auth:sanctum')->post('/histoire', [HistoireController::class, 'storeStory']); //enregistrer une histoire
 Route::middleware('auth:sanctum')->put('/histoire/{id}', [HistoireController::class, 'updateStory']);
 Route::middleware('auth:sanctum')->post('/delete/histoire/{id}', [HistoireController::class, 'deleteStory']);
+Route::middleware('auth:sanctum')->get('/lecture/other-chapitres/{id}', [HistoireController::class, 'getOtherChapterWithStory']); //récupère l'histoire pour la page de lecture et les différents chapitres
 Route::middleware('auth:sanctum')->put('/histoire/latest', [HistoireController::class, 'getLatestStory']); //afficher la dernière histoire crée, elle apparait sur la page home
 //
 Route::middleware('auth:sanctum')->get('/histoire/categories/{id}', [CategorieController::class, 'getCategoriesForStory']); // récupère toutes les catégories et targue les catégories de l'histoire qui à l'id

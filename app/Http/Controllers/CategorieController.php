@@ -13,20 +13,6 @@ class CategorieController extends Controller
 //début controller gaël
     public function getCategoriesForStory($histoireId)
     {
-      /*  // Récupérer les ID des catégories liées à l'histoire donnée
-        $categoriesLiees = CategorieHistoire::where('histoire_id', $histoireId)
-            ->pluck('categorie_id')
-            ->toArray();
-
-        // Récupérer toutes les catégories et ajouter l'attribut 'checked'
-        $categories = Category::all()->map(function ($category) use ($categoriesLiees) {
-            $category->checked = in_array($category->id, $categoriesLiees) ? true : false;
-            return $category;
-        });
-
-        // Retourner les catégories avec leur statut checked
-        return response()->json($categories);*/
-
         try {
      
             // Récupérer les ID des catégories liées à l'histoire donnée
@@ -94,6 +80,66 @@ class CategorieController extends Controller
     }
 
     } 
+
+    /**
+     * Ajouter une catégorie.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function storeCategoriesHistoire(Request $request)
+    {
+        // Valider les données d'entrée
+        $validated = $request->validate([
+            'nom' => 'required|string',
+        ]);
+
+        // Créer la catégorie
+        try {
+            $category = Category::create([
+                'nom' => $validated['nom'],
+            ]);
+
+            // Réponse de succès
+            return response()->json([
+                'message' => 'Catégorie créée avec succès.',
+                'data' => $category,
+            ], 201); // 201 Created
+        } catch (\Exception $e) {
+            // Réponse en cas d'erreur
+            return response()->json([
+                'message' => 'Erreur lors de la création de la catégorie.',
+                'error' => $e->getMessage(),
+            ], 500); // 500 Internal Server Error
+        }
+    }
+
+    /**
+     * Afficher toutes les catégories.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getCategoriesIndex()
+{
+    try {
+        // Récupérer toutes les catégories
+        $categories = Category::all();
+
+        // Réponse de succès, même si la liste est vide
+        return response()->json([
+            'message' => $categories->isEmpty()
+                ? 'Aucune catégorie disponible.'
+                : 'Liste des catégories récupérée avec succès.',
+            'data' => $categories,
+        ], 200); // 200 OK
+    } catch (\Exception $e) {
+        // Réponse en cas d'erreur
+        return response()->json([
+            'message' => 'Erreur lors de la récupération des catégories.',
+            'error' => $e->getMessage(),
+        ], 500); // 500 Internal Server Error
+    }
+}   
 //fin gael
 
 }
