@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\CategorieHistoire;
+use App\Models\CategoriePrefere;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Category;
 use Illuminate\Support\Facades\Log;
 
@@ -11,12 +13,37 @@ class CategorieController extends Controller
 {
     //
 //début controller gaël
+
+    public function storeCategoriesPreferee(Request $request){
+
+        try {
+            $categories = $request->get('categories'); 
+    
+           /* if (!is_array($categories)) {
+                return response()->json(['message' => 'Format invalide', 'success' => false], 400);
+            }*/
+        
+            // Boucler sur les nouvelles catégories et les insérer
+            
+            foreach ($categories as $categorie) {
+                CategoriePrefere::create([
+                    'user_id' => Auth::id(),
+                    'categorie_id' => $categorie,
+                ]);
+            }
+    
+            return response()->json(['message' => 'catégories préférées enregistrées avec succès.', 'success' => true], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Erreur lors de la publication de l\'histoire.','error' => $e->getMessage(), 'success' => false], 500);
+        }
+    }
+
     public function getCategoriesForStory($histoireId)
     {
         try {
      
             // Récupérer les ID des catégories liées à l'histoire donnée
-               $categoriesLiees = CategorieHistoire::where('histoire_id', 1/*$histoireId*/)
+               $categoriesLiees = CategorieHistoire::where('histoire_id', $histoireId)
                    ->pluck('categorie_id')
                    ->toArray();
        

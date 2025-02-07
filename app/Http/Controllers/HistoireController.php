@@ -16,23 +16,23 @@ class HistoireController extends Controller
 //début controller gaël
 
     //on affiche les éléments de l'histoire
-    public function edit()
+    public function edit(String $id)
 {
 
-//$id =  Auth::id() || 1;
+
+//$id=1;
     try {
         $histoire = Histoire::select(['id', 'titre', 'resume', 'couverture', 'statut', 'mot_cles', 'progression'])
             ->with([
                 'chapitres:id,histoire_id,titre,numero,content,updated_at',
                 'categorieHistoires.category:id,nom',
-            ])
-            ->latest('created_at') // Tri par date de création décroissante
-            ->first();
-          //  ->find($id);
+            ])->where('id', '=', $id)->first();
+           
 
         if (!$histoire) {
             return response()->json([
                 'message' => 'Cette histoire n\'est pas disponible.',
+                'id' => $id,
                 'data' => null,
             ], 404); // 404 Not Found
         }
@@ -81,7 +81,7 @@ public function getLatestStory()
     {
         try {
             // Récupérer l'ID de l'utilisateur connecté
-            $userId = Auth::id();
+            $userId =  Auth::id();
 
             if (!$userId) {
                 return response()->json([
@@ -125,6 +125,70 @@ public function getLatestStory()
             // Journaliser l'erreur pour le débogage
             Log::error('Erreur dans HistoireController: ' . $e->getMessage());
 
+            // Retourner une réponse d'erreur générique
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur s\'est produite lors de la récupération des données.',
+            ], 500); // 500 Internal Server Error
+        }
+    }
+
+    public function mesHistoires()
+    {
+        try {
+            // Récupérer l'ID de l'utilisateur connecté
+            $userId = Auth::id();
+    
+            if (!$userId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Utilisateur non authentifié.',
+                ], 401); // 401 Unauthorized
+            }
+    
+            // Récupérer toutes les histoires de l'utilisateur
+            $histoires = Histoire::where('user_id', $userId)
+                ->with('chapitres') // Charger les chapitres en une seule requête
+                ->get();
+    
+            if ($histoires->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Aucune histoire trouvée pour cet utilisateur.',
+                ], 404); // 404 Not Found
+            }
+    
+            // Préparer un tableau pour stocker les données de chaque histoire
+            $data = [];
+    
+            foreach ($histoires as $histoire) {
+                // Compter les chapitres publiés et les brouillons
+                $totalChapitresPublies = $histoire->chapitres->where('statut', 'Publier')->count();
+                $totalBrouillons = $histoire->chapitres->where('statut', 'Brouillon')->count();
+    
+                // Déterminer si l'histoire est publiée (au moins un chapitre publié)
+                $published = $totalChapitresPublies > 0;
+    
+                // Ajouter les données de l'histoire au tableau
+                $data[] = [
+                    'titre' => $histoire->titre, // Titre de l'histoire
+                    'couverture' => $histoire->couverture,
+                    'nbr_publies' => $totalChapitresPublies,
+                    'nbr_brouillons' => $totalBrouillons,
+                    'published' => $published, // Ajout de l'attribut published
+                ];
+            }
+    
+            // Retourner les données sous forme de JSON
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+            ], 200); // 200 OK
+    
+        } catch (\Exception $e) {
+            // Journaliser l'erreur pour le débogage
+            Log::error('Erreur dans HistoireController: ' . $e->getMessage());
+    
             // Retourner une réponse d'erreur générique
             return response()->json([
                 'success' => false,
@@ -275,3 +339,6 @@ public function getOtherChapterWithStory($id)
 
 //fin gael
 }
+
+
+ 

@@ -102,11 +102,10 @@ public function updateChapitre(Request $request)
          $ancienContent = json_decode($chapitre->content, true);
          $imagesAnciennes = $this->extraireImages($ancienContent);
  
-         // Supprimer toutes les images de l'ancien contenu
-         foreach ($imagesAnciennes as $image) {
-             $this->supprimerImage($image);
-         }
 */
+            // Supprimer toutes les images de l'ancien contenu
+            $chapitre->supprimerImages();
+
         $chapitre_updated = $chapitre->update([
             'titre' => $validated['titre'],
             'content' => $validated['content'],
