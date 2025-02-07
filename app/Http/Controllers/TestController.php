@@ -68,5 +68,17 @@ class TestController extends Controller
         ], 500); // 500 Internal Server Error
     }
 }
+
+public function firstRoot(){
+    try {
+        return response()->json([
+            'message' => 'Liste des catégories récupérée avec succès.'], 200); // 200 OK
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Erreur lors de la récupération des catégories.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
 //fin fonction test Gaël
 }

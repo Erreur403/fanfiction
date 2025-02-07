@@ -64,6 +64,7 @@ Route::middleware('auth:sanctum')->get('/histoire/categories/{id}', [CategorieCo
 Route::middleware('auth:sanctum')->put('/categories/{id}', [CategorieController::class, 'updateCategory']); // mets à jour les catégories d'une histoire
 //routes pour authentification
 Route::post('/register', [AuthController::class, 'register']);
+Route::get('/test', [TestController::class, 'firstRoot']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 //fin : route Gaël Test
