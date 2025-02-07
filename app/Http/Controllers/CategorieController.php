@@ -34,7 +34,7 @@ class CategorieController extends Controller
     
             return response()->json(['message' => 'catégories préférées enregistrées avec succès.', 'success' => true], 200);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Erreur lors de la publication de l\'histoire.','error' => $e->getMessage(), 'success' => false], 500);
+            return response()->json(['message' => "Erreur lors de l'enregistrement de la catégorie préférée.",'error' => $e->getMessage(), 'success' => false], 500);
         }
     }
 
