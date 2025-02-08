@@ -3,13 +3,13 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CommentaireController;
-use App\Http\Controllers\AbonneController;
+use App\Http\Controllers\RecommandationController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\ChapitreController;
 use App\Http\Controllers\HistoireController;
 use App\Http\Controllers\CategorieController;
 use App\Http\Controllers\AuthController;
-
+use App\Http\Controllers\UserController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -30,6 +30,21 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 //
 Route::post('/upload-image', [ChapitreController::class, 'uploadImage']);  //permet d'insérer des images dans le storage/public
+
+//
+Route::middleware('auth:sanctum')->get('/recommandation/self/user', [RecommandationController::class, 'getHistoiresUtilisateur']);  
+Route::middleware('auth:sanctum')->get('/recommandation/default/user', [RecommandationController::class, 'getAllHistoires']);  
+Route::middleware('auth:sanctum')->get('/recommandation', [RecommandationController::class, 'getHistoiresParCategoriesPreferees']);  
+
+//User
+
+/*Route::get('/user/profil', [UserController::class, 'getProfil']); // récupère toutes les catégories et targue les catégories de l'histoire qui à l'id
+Route::put('/user/profil/update', [UserController::class, 'updateProfil']); // mets à jour les catégories d'une histoire
+*/
+Route::middleware('auth:sanctum')->get('/user/profil', [UserController::class, 'getProfil']); // récupère toutes les catégories et targue les catégories de l'histoire qui à l'id
+Route::middleware('auth:sanctum')->put('/user/profil/update', [UserController::class, 'updateProfil']); // mets à jour les catégories d'une histoire
+
+
 
 //
 Route::middleware('auth:sanctum')->post('/commentaires', [CommentaireController::class, 'store']);
