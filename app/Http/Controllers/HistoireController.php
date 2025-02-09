@@ -171,6 +171,7 @@ public function getLatestStory()
     
                 // Ajouter les données de l'histoire au tableau
                 $data[] = [
+                    'id' => $histoire->id,
                     'titre' => $histoire->titre, // Titre de l'histoire
                     'couverture' => $histoire->couverture,
                     'nbr_publies' => $totalChapitresPublies,
@@ -269,6 +270,7 @@ public function deleteStory($id)
         }
 
         $histoire->delete();
+        $histoire->onDelete('cascade');
 
         return response()->json([
             'success' => true,
