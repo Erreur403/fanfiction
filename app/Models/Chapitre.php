@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
-
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 /**
  * @property integer $id
  * @property integer $histoire_id
@@ -92,12 +92,25 @@ class Chapitre extends Model
         $images = $this->extraireUrlsImages();
 
         foreach ($images as $imageUrl) {
-            $baseUrl = url('/') . '/storage/';
-            $relativePath = str_replace($baseUrl, '', $imageUrl);
-
-            if (Storage::disk('public')->exists($relativePath)) {
-                Storage::disk('public')->delete($relativePath);
+            // Extraire l'ID public de l'image depuis l'URL Cloudinary
+            $publicId = $this->extrairePublicIdDepuisUrlCloudinary($imageUrl);
+    
+            if ($publicId) {
+                // Supprimer l'image de Cloudinary
+                Cloudinary::destroy($publicId);
             }
         }
     }
+
+    /**
+ * Extraire l'ID public d'une URL Cloudinary.
+ */
+private function extrairePublicIdDepuisUrlCloudinary(string $url): ?string
+{
+    // Exemple d'URL Cloudinary : https://res.cloudinary.com/votre-cloud/image/upload/v1234567/public_id.jpg
+    $pattern = '/upload\/(?:v\d+\/)?([^\.]+)/';
+    preg_match($pattern, $url, $matches);
+
+    return $matches[1] ?? null;
+}
 }

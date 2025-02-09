@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Illuminate\Support\Facades\Log;
+use Cloudinary\Api\Upload\UploadApi;
 use \App\Models\Chapitre;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +21,58 @@ class ChapitreController extends Controller
      /**
      * Upload d'image via l'éditeur.
      */
-    public function uploadImage(Request $request)
+  /*  public function uploadImage(Request $request)
+{
+    if (!$request->hasFile('image') || !$request->file('image')->isValid()) {
+        return response()->json(['message' => 'Aucun fichier valide fourni.'], 400);
+    }
+
+    // Logger les informations sur le fichier
+    $file = $request->file('image');
+
+
+    
+
+    // Uploader l'image sur Cloudinary
+    try {
+        $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+            'folder' => 'images', // Dossier où stocker les images
+            'verify' => false // Désactiver la vérification SSL
+        ]);
+
+        // Récupérer l'URL sécurisée de l'image
+        $url = $uploadedFile->getSecurePath();
+
+        return response()->json(['url' => $url], 200);
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'Erreur lors de l\'upload de l\'image.'], 500);
+    }
+}*/
+
+public function uploadImage(Request $request)
+{
+    if (!$request->hasFile('image') || !$request->file('image')->isValid()) {
+        return response()->json(['message' => 'Aucun fichier valide fourni.'], 400);
+    }
+
+    $file = $request->file('image');
+    
+    try {
+        $uploadResult = Cloudinary::unsignedUpload($file->getRealPath(), env('CLOUDINARY_UPLOAD_PRESET'), [
+            'folder' => 'images',
+        ]);
+
+        $url = $uploadResult->getSecurePath();
+
+        return response()->json(['url' => $url], 200);
+    } catch (\Exception $e) {
+        Log::error('Erreur lors de l\'upload: ' . $e->getMessage());
+        return response()->json(['message' => 'Erreur lors de l\'upload de l\'image: ' . $e->getMessage()], 500);
+    }
+}
+
+
+   /* public function uploadImage(Request $request)
     {
         // Vérifiez si le fichier est bien fourni
         if (!$request->hasFile('image') || !$request->file('image')->isValid()) {
@@ -44,7 +98,8 @@ class ChapitreController extends Controller
 
 
         return response()->json(['url' => $url], 200);
-    }
+    }*/
+
 
 
     /**
