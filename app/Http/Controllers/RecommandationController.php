@@ -23,7 +23,7 @@ class RecommandationController extends Controller
     public function getHistoiresLues()
     {
         try {
-            $user =   User::find(6); //Auth::user();
+            $user = Auth::user();  //User::find(6);
             if (!$user) {
                 return response()->json(['message' => 'Utilisateur non authentifié'], 401);
             }
@@ -33,14 +33,18 @@ class RecommandationController extends Controller
                 ->where('action', 'lecture')
                 ->with('chapitre.histoire')
                 ->get();
+               
           //  dd($lectures);
 
+         /* $lectures = $lecturesG->groupBy('chapitre.histoire.id') 
+          ->take(5);*/
             // Organiser les données
             $histoires = [];
             foreach ($lectures as $lecture) {
                 if ($lecture->chapitre) {
                     $histoire = $lecture->chapitre->histoire;
                     $dernierChapitreLu = $lecture->chapitre->numero;
+                    $dernierChapitreLuId = $lecture->chapitre->id;
             
                     if (!isset($histoires[$histoire->id])) {
                         $histoires[$histoire->id] = [
@@ -48,6 +52,7 @@ class RecommandationController extends Controller
                             'couverture' => $histoire->couverture,
                             'titre' => $histoire->titre,
                             'dernier_chapitre_lu' => $dernierChapitreLu,
+                            'dernier_chapitre_lu_id' => $dernierChapitreLuId,
                         ];
                     }
                 }
@@ -111,12 +116,12 @@ class RecommandationController extends Controller
      */
     public function getAllHistoires()
     {
+
         try {
             $histoires = Histoire::whereHas('chapitres', function ($query) {
                 $query->where('statut', '=', 'Publier'); // Assurez-vous que 'progression' ou une autre colonne reflète l'état "publié"
             })->select('couverture', 'titre', 'id')
             ->get();
-            
 
             return response()->json([
                 'message' => 'Toutes les histoires récupérées avec succès',

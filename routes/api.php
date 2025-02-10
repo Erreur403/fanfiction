@@ -28,6 +28,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 //Route: Gaël Test
 
+
+
 //
 Route::post('/upload-image', [ChapitreController::class, 'uploadImage']);  //permet d'insérer des images dans le storage/public
 

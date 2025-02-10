@@ -285,18 +285,86 @@ public function deleteStory($id)
     }
 }
 
-public function getOtherChapterWithStory($id)
+
+public function getOtherChapterWithStory($id, Request $request)
+{
+    try {
+        // Vérifier si on cherche via une histoire ou un chapitre
+        $forStory = $request->boolean('forStory');
+
+        if ($forStory) {
+            // Recherche par ID de l'histoire
+            $histoire = Histoire::find($id);
+
+            if (!$histoire) {
+                return response()->json([
+                    'message' => 'Histoire introuvable.',
+                ], 404);
+            }
+        } else {
+            // Recherche par ID de chapitre
+            $chapitre = Chapitre::find($id);
+
+            if (!$chapitre) {
+                return response()->json([
+                    'message' => 'Chapitre introuvable.',
+                ], 404);
+            }
+
+            // Récupérer l'histoire associée au chapitre
+            $histoire = $chapitre->histoire;
+
+            if (!$histoire) {
+                return response()->json([
+                    'message' => 'Histoire introuvable pour ce chapitre.',
+                ], 404);
+            }
+        }
+
+        // Récupérer les informations de l'histoire
+        $histoireData = [
+            'id' => $histoire->id,
+            'titre' => $histoire->titre,
+            'couverture' => $histoire->couverture,
+        ];
+
+        // Récupérer les autres chapitres publiés de cette histoire
+        $autresChapitres = Chapitre::where('histoire_id', $histoire->id)
+            ->where('statut', 'Publier') // Filtrer par statut "publié"
+            ->select('id', 'numero', 'titre') // Sélectionner uniquement les champs nécessaires
+            ->orderBy('numero') // Trier par numéro de chapitre
+            ->get();
+
+        return response()->json([
+            'message' => 'Données récupérées avec succès.',
+            'data' => [
+                'histoire' => $histoireData,
+                'chapitres' => $autresChapitres,
+            ],
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Erreur lors de la récupération des données.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+
+
+
+
+/*public function getOtherChapterWithStory($id, Request $request)
 {
     try {
         // Récupérer le chapitre par son ID
-       /* $chapitre = Chapitre::find($id);
+        $chapitre = Chapitre::find($id);
 
         // Vérifier si le chapitre existe
         if (!$chapitre) {
             return response()->json([
                 'message' => 'Chapitre introuvable.',
             ], 404); // 404 Not Found
-        }*/
+        }
 
         // Récupérer l'histoire associée au chapitre
        // $histoire = $chapitre->histoire;
@@ -338,7 +406,7 @@ public function getOtherChapterWithStory($id)
             'error' => $e->getMessage(),
         ], 500); // 500 Internal Server Error
     }
-}
+}*/
 
 //fin gael
 }

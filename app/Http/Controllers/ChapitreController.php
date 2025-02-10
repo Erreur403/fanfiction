@@ -195,7 +195,94 @@ public function getChapitre($id)
         }
     }
 
-    public function lectureChapitre($id)
+    public function lectureChapitre($id, Request $request)
+    {
+        try {
+            // Récupérer l'ID de l'utilisateur authentifié
+            $userId = Auth::id();
+    
+            // Vérifier si l'utilisateur est authentifié
+            if (!$userId) {
+                return response()->json([
+                    'message' => 'Utilisateur non authentifié.',
+                ], 401); // 401 Unauthorized
+            }
+    
+            // Vérifier si la requête concerne une histoire ou un chapitre
+            $forStory = $request->boolean('forStory'); 
+    
+            if ($forStory) {
+                // Si forStory est true, récupérer le premier chapitre de l'histoire
+                $histoire = Histoire::find($id);
+    
+                if (!$histoire) {
+                    return response()->json(['message' => 'Histoire introuvable.'], 404);
+                }
+    
+                // Récupérer le premier chapitre de cette histoire
+                $chapitre = $histoire->chapitres()->orderBy('numero')->first();
+    
+                if (!$chapitre) {
+                    return response()->json(['message' => 'Aucun chapitre trouvé pour cette histoire.'], 404);
+                }
+            } else {
+                // Si forStory est false, récupérer directement le chapitre par son ID
+                $chapitre = Chapitre::find($id);
+    
+                if (!$chapitre) {
+                    return response()->json(['message' => 'Chapitre introuvable.'], 404);
+                }
+            }
+    
+            // Vérifier si l'utilisateur a déjà vu ce chapitre
+            $userAction = UserAction::where('user_id', $userId)
+                ->where('chapitre_id', $chapitre->id)
+                ->where('action', 'lecture')
+                ->first();
+    
+            $verifyUserLike = UserAction::where('user_id', $userId)
+                ->where('chapitre_id', $chapitre->id)
+                ->where('action', 'like')
+                ->first();
+    
+            // Si l'utilisateur n'a pas encore vu le chapitre, ajouter une action 'lecture'
+            if (!$userAction) {
+                UserAction::create([
+                    'user_id' => $userId,
+                    'chapitre_id' => $chapitre->id,
+                    'action' => 'lecture',
+                ]);
+            }
+    
+            // Compter les statistiques pour ce chapitre
+            $nombreCommentaires = Commentaire::where('chapitre_id', $chapitre->id)->count();
+            $nombreLikes = UserAction::where('chapitre_id', $chapitre->id)->where('action', 'like')->count();
+            $nombreVues = UserAction::where('chapitre_id', $chapitre->id)->where('action', 'lecture')->count();
+    
+            // Retourner les données du chapitre avec les informations supplémentaires
+            return response()->json([
+                'message' => 'Chapitre récupéré avec succès.',
+                'data' => [
+                    'id' => $chapitre->id,
+                    'titre' => $chapitre->titre,
+                    'content' => $chapitre->content,
+                    'numero' => $chapitre->numero,
+                    'nombre_commentaires' => $nombreCommentaires,
+                    'nombre_likes' => $nombreLikes,
+                    'nombre_vues' => $nombreVues,
+                    'deja_liker' => $verifyUserLike ? true : false,
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            // Gérer toute erreur
+            return response()->json([
+                'message' => 'Erreur lors de la récupération du chapitre.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+    
+   /* public function lectureChapitre($id, Request $request)
 {
     try {
         // Récupérer l'ID de l'utilisateur authentifié
@@ -208,7 +295,7 @@ public function getChapitre($id)
             ], 401); // 401 Unauthorized
         }
 
-        // for the situation
+       
 
 
         //end for the situation
@@ -290,7 +377,7 @@ public function getChapitre($id)
             'error' => $e->getMessage(),
         ], 500); // 500 Internal Server Error
     }
-}
+}*/
 
 public function toggleLikeChapter(String $id, Request $request)
 {
