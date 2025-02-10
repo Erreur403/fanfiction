@@ -20,7 +20,7 @@ class RecommandationController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getHistoiresLues()
+   /* public function getHistoiresLues()
     {
         try {
             $user = Auth::user();  //User::find(6);
@@ -36,8 +36,6 @@ class RecommandationController extends Controller
                
           //  dd($lectures);
 
-         /* $lectures = $lecturesG->groupBy('chapitre.histoire.id') 
-          ->take(5);*/
             // Organiser les données
             $histoires = [];
             foreach ($lectures as $lecture) {
@@ -69,7 +67,60 @@ class RecommandationController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }*/
+
+
+    public function getHistoiresLues()
+{
+    try {
+        $user = Auth::user();  
+        if (!$user) {
+            return response()->json(['message' => 'Utilisateur non authentifié'], 401);
+        }
+
+        // Récupérer les actions de lecture de l'utilisateur, triées par date de création (du plus récent au plus ancien)
+        $lectures = UserAction::where('user_id', $user->id)
+            ->where('action', 'lecture')
+            ->with('chapitre.histoire')
+            ->orderBy('created_at', 'desc') // Tri par date de création décroissante
+            ->get();
+
+        // Organiser les données pour garder uniquement le dernier chapitre lu par histoire
+        $histoires = [];
+        foreach ($lectures as $lecture) {
+            if ($lecture->chapitre) {
+                $histoire = $lecture->chapitre->histoire;
+                $dernierChapitreLu = $lecture->chapitre->numero;
+                $dernierChapitreLuId = $lecture->chapitre->id;
+
+                // Si l'histoire n'a pas encore été ajoutée au tableau, on l'ajoute
+                if (!isset($histoires[$histoire->id])) {
+                    $histoires[$histoire->id] = [
+                        'id' => $histoire->id,
+                        'couverture' => $histoire->couverture,
+                        'titre' => $histoire->titre,
+                        'dernier_chapitre_lu' => $dernierChapitreLu,
+                        'dernier_chapitre_lu_id' => $dernierChapitreLuId,
+                    ];
+                }
+            }
+        }
+
+        // Convertir le tableau associatif en tableau indexé et limiter à 5 histoires
+        $histoiresLimitees = array_slice(array_values($histoires), 0, 8);
+
+        // Retourner les histoires sous forme de tableau indexé
+        return response()->json([
+            'message' => 'Histoires lues récupérées avec succès',
+            'data' => $histoiresLimitees,
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Erreur lors de la récupération des histoires lues',
+            'error' => $e->getMessage(),
+        ], 500);
     }
+}
 
     /**
      * Récupère les histoires correspondant aux catégories préférées de l'utilisateur.
