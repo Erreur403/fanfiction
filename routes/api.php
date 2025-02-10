@@ -35,6 +35,8 @@ Route::post('/upload-image', [ChapitreController::class, 'uploadImage']);  //per
 Route::middleware('auth:sanctum')->get('/recommandation/self/user', [RecommandationController::class, 'getHistoiresUtilisateur']);  
 Route::middleware('auth:sanctum')->get('/recommandation/default/user', [RecommandationController::class, 'getAllHistoires']);  
 Route::middleware('auth:sanctum')->get('/recommandation', [RecommandationController::class, 'getHistoiresParCategoriesPreferees']);  
+Route::middleware('auth:sanctum')->get( '/recommandation/user/view', [RecommandationController::class, 'getHistoiresLues']);  
+Route::middleware('auth:sanctum')->get('/recommandation/populaire', [RecommandationController::class, 'getMostPopularStories']);  
 
 //User
 
@@ -61,9 +63,11 @@ Route::middleware('auth:sanctum')->post('/categories/preferees', [CategorieContr
 //
 Route::middleware('auth:sanctum')->post('/chapitres', [ChapitreController::class, 'storeChapitre']); //enregistrer un chapitre
 Route::middleware('auth:sanctum')->post('/update/chapitre', [ChapitreController::class, 'updateChapitre']); 
+Route::middleware('auth:sanctum')->put('/enregistrer/chapitre', [ChapitreController::class, 'enregistrerChapitre']); 
 Route::middleware('auth:sanctum')->get('/chapitres/{id}', [ChapitreController::class, 'getChapitre']);
 Route::middleware('auth:sanctum')->get('/lecture/chapitre/{id}', [ChapitreController::class, 'lectureChapitre']); //lecture
 Route::middleware('auth:sanctum')->post('/delete/chapitre/{id}', [ChapitreController::class, 'destroy']);
+Route::middleware('auth:sanctum')->post('/like/{id}', [ChapitreController::class, 'toggleLikeChapter']);
 //
 Route::middleware('auth:sanctum')->get('/histoire/{id}', [HistoireController::class, 'edit']); //afficher les informations d'une histoire pour modification
 Route::middleware('auth:sanctum')->post('/histoire', [HistoireController::class, 'storeStory']); //enregistrer une histoire

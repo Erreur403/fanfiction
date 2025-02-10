@@ -11,6 +11,7 @@ use \App\Models\Chapitre;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Commentaire;
+use App\Models\Histoire;
 use App\Models\UserAction;
 
 class ChapitreController extends Controller
@@ -21,33 +22,7 @@ class ChapitreController extends Controller
      /**
      * Upload d'image via l'éditeur.
      */
-  /*  public function uploadImage(Request $request)
-{
-    if (!$request->hasFile('image') || !$request->file('image')->isValid()) {
-        return response()->json(['message' => 'Aucun fichier valide fourni.'], 400);
-    }
-
-    // Logger les informations sur le fichier
-    $file = $request->file('image');
-
-
-    
-
-    // Uploader l'image sur Cloudinary
-    try {
-        $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-            'folder' => 'images', // Dossier où stocker les images
-            'verify' => false // Désactiver la vérification SSL
-        ]);
-
-        // Récupérer l'URL sécurisée de l'image
-        $url = $uploadedFile->getSecurePath();
-
-        return response()->json(['url' => $url], 200);
-    } catch (\Exception $e) {
-        return response()->json(['message' => 'Erreur lors de l\'upload de l\'image.'], 500);
-    }
-}*/
+  
 
 public function uploadImage(Request $request)
 {
@@ -159,7 +134,7 @@ public function updateChapitre(Request $request)
  
 */
             // Supprimer toutes les images de l'ancien contenu
-            $chapitre->supprimerImages();
+           // $chapitre->supprimerImages();
 
         $chapitre_updated = $chapitre->update([
             'titre' => $validated['titre'],
@@ -170,6 +145,19 @@ public function updateChapitre(Request $request)
         return response()->json(['message' => 'Chapitre mis à jour avec succès.', 'chapitre' => $chapitre_updated], 200);
     } catch (\Exception $e) {
         return response()->json(['message' => 'Erreur lors de la mise à jour du chapitre.', 'error' => $e->getMessage()], 500);
+    }
+}
+
+public function enregistrerChapitre(Request $request)
+{
+    Log::info('Données reçues : ', $request->all());
+    try {
+        $chapitre = Chapitre::findOrFail($request->get('id'));
+        $chapitre_updated = $chapitre->update($request->all());
+        return response()->json(['message' => 'Chapitre enregistré.', 'chapitre' => $chapitre_updated], 200);
+    } catch (\Exception $e) {
+        Log::error('Erreur lors de l\'enregistrement du chapitre : ' . $e->getMessage());
+        return response()->json(['message' => "Erreur lors de l'enregistrement du chapitre.", 'error' => $e->getMessage()], 500);
     }
 }
 
@@ -220,8 +208,27 @@ public function getChapitre($id)
             ], 401); // 401 Unauthorized
         }
 
+        // for the situation
+
+
+        //end for the situation
+        $histoire = Histoire::find($id); // Ici, $id est l'ID de l'histoire, pas du chapitre
+
+        // Vérifier si l'histoire existe
+        if ($histoire) {
+            // Récupérer le premier chapitre de cette histoire (en supposant que les chapitres sont triés par numéro ou date de création)
+            $premierChapitre = $histoire->chapitres()->orderBy('numero')->first(); // Utiliser 'numero' ou un autre critère pour déterminer le premier chapitre
+
+            if ($premierChapitre) {
+                $chapitreId = $premierChapitre->id;
+                // Vous pouvez maintenant utiliser $idPremierChapitre
+            } else {
+                // Aucun chapitre trouvé
+                return response()->json(['message' => 'Aucun chapitre trouvé pour cette histoire.'], 404);
+            }
+        }
         // Rechercher le chapitre
-        $chapitre = Chapitre::find($id);
+        $chapitre = Chapitre::find($chapitreId);
 
         // Vérifier si le chapitre existe
         if (!$chapitre) {
@@ -234,6 +241,11 @@ public function getChapitre($id)
         $userAction = UserAction::where('user_id', $userId)
             ->where('chapitre_id', $id)
             ->where('action', 'lecture')
+            ->first();
+
+        $verifyUserLike = UserAction::where('user_id', $userId)
+            ->where('chapitre_id', $id)
+            ->where('action', 'like')
             ->first();
 
         // Si l'utilisateur n'a pas encore vu le chapitre, ajouter une action 'lecture'
@@ -268,13 +280,61 @@ public function getChapitre($id)
                 'nombre_commentaires' => $nombreCommentaires,
                 'nombre_likes' => $nombreLikes,
                 'nombre_vues' => $nombreVues,
-                'deja_vu' => $userAction ? true : false, // Indique si l'utilisateur a déjà vu le chapitre
+                'deja_liker' => $verifyUserLike ? true : false, // Indique si l'utilisateur a déjà vu le chapitre
             ],
         ], 200); // 200 OK
     } catch (\Exception $e) {
         // Gérer toute erreur
         return response()->json([
             'message' => 'Erreur lors de la récupération du chapitre.',
+            'error' => $e->getMessage(),
+        ], 500); // 500 Internal Server Error
+    }
+}
+
+public function toggleLikeChapter(String $id, Request $request)
+{
+    try{
+        // Vérifier si l'utilisateur est authentifié
+    $userId = Auth::id();
+    if (!$userId) {
+        return response()->json(['message' => 'Utilisateur non authentifié'], 401);
+    }
+
+    // Vérifier si le paramètre liked est bien présent dans la requête
+    if (!isset($request->liked)) {
+        return response()->json(['message' => 'Paramètre "liked" manquant'], 400);
+    }
+
+    // Si liked est true, ajouter un like
+    if ($request->liked) {
+       
+        // Créer une nouvelle action "like"
+        UserAction::create([
+            'user_id' => $userId,
+            'chapitre_id' => $id,
+            'action' => 'like'
+        ]);
+
+        return response()->json(['message' => 'Chapitre liké avec succès'], 201);
+    } 
+    // Si liked est false, supprimer le like existant
+    else {
+        $deleted = UserAction::where('user_id', $userId)
+            ->where('chapitre_id', $id)
+            ->where('action', 'like')
+            ->delete();
+
+        if ($deleted) {
+            return response()->json(['message' => 'Like supprimé avec succès'], 200);
+        } else {
+            return response()->json(['message' => 'Aucun like trouvé à supprimer'], 404);
+        }
+    }
+    }catch(\Exception $e) {
+        // Gérer toute erreur
+        return response()->json([
+            'message' => 'Erreur lors du like du chapitre',
             'error' => $e->getMessage(),
         ], 500); // 500 Internal Server Error
     }
@@ -289,7 +349,7 @@ public function getChapitre($id)
             $numeroSupprime = $chapitre->numero;
     
             // suppression des images du contenu JSON
-            $chapitre->supprimerImages();
+          //  $chapitre->supprimerImages();
     
             // Supprimer le chapitre
             $chapitre->delete();
@@ -314,42 +374,7 @@ public function getChapitre($id)
         }
     }
     
-    /**
-     * Extraire les URLs des images du contenu JSON.
-     *
-     * @param array $contenu
-     * @return array
-     */
-    private function extraireUrlsImages(array $contenu): array
-    {
-        $images = [];
-    
-        foreach ($contenu as $bloc) {
-            if (isset($bloc['insert']['image'])) {
-                $images[] = $bloc['insert']['image'];
-            }
-        }
-    
-        return $images;
-    }
-    
-    /**
-     * Supprimer une image du stockage en utilisant Laravel Storage.
-     *
-     * @param string $imageUrl
-     * @return void
-     */
-    private function supprimerImageDuStockage(string $imageUrl): void
-    {
-        // Extraire le chemin relatif de l'image depuis l'URL
-        $baseUrl = url('/') . '/storage/'; // URL de base du stockage public
-        $relativePath = str_replace($baseUrl, '', $imageUrl); // Chemin relatif dans le stockage
-    
-        // Supprimer le fichier en utilisant Laravel Storage
-        if (Storage::disk('public')->exists($relativePath)) {
-            Storage::disk('public')->delete($relativePath);
-        }
-    }
+   
 //fin gael
 }
 

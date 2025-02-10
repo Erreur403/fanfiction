@@ -265,12 +265,12 @@ public function deleteStory($id)
         $chapitres = Chapitre::where('histoire_id', $id)->get();
 
         foreach ($chapitres as $chapitre) {
-            $chapitre->supprimerImages(); // Supprimer les images du chapitre
+        //    $chapitre->supprimerImages(); // Supprimer les images du chapitre
             $chapitre->delete(); // Supprimer le chapitre
         }
 
         $histoire->delete();
-        $histoire->onDelete('cascade');
+       // $histoire->onDelete('cascade');
 
         return response()->json([
             'success' => true,
@@ -289,17 +289,18 @@ public function getOtherChapterWithStory($id)
 {
     try {
         // Récupérer le chapitre par son ID
-        $chapitre = Chapitre::find($id);
+       /* $chapitre = Chapitre::find($id);
 
         // Vérifier si le chapitre existe
         if (!$chapitre) {
             return response()->json([
                 'message' => 'Chapitre introuvable.',
             ], 404); // 404 Not Found
-        }
+        }*/
 
         // Récupérer l'histoire associée au chapitre
-        $histoire = $chapitre->histoire;
+       // $histoire = $chapitre->histoire;
+       $histoire = Histoire::find($id);
 
         // Vérifier si l'histoire existe
         if (!$histoire) {
