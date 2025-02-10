@@ -13,6 +13,7 @@ use App\Models\Commentaire;
 use App\Models\UserAction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+
 class DemoSeeder extends Seeder
 {
     /**
@@ -28,7 +29,6 @@ class DemoSeeder extends Seeder
                 'password' => bcrypt('password'),
                 'bio' => 'Amoureuse des histoires fantastiques et des mondes imaginaires.',
                 'avatar' => 'https://res.cloudinary.com/dkowocn8y/image/upload/v1739114257/images/pepkbl17fovwnfks8mpw.jpg',
-               
             ],
             [
                 'name' => 'Bob',
@@ -36,7 +36,6 @@ class DemoSeeder extends Seeder
                 'password' => bcrypt('password'),
                 'bio' => 'Passionné d\'aventures et de voyages à travers les livres.',
                 'avatar' => 'https://res.cloudinary.com/dkowocn8y/image/upload/v1739118178/images/gcpxa3kmqaeywxf79fyy.jpg',
-               
             ],
             [
                 'name' => 'Charlie',
@@ -44,7 +43,6 @@ class DemoSeeder extends Seeder
                 'password' => bcrypt('password'),
                 'bio' => 'Fan de romances et de drames émouvants.',
                 'avatar' => 'https://res.cloudinary.com/dkowocn8y/image/upload/v1739061691/samples/people/boy-snow-hoodie.jpg',
-               
             ],
         ];
 
@@ -54,22 +52,13 @@ class DemoSeeder extends Seeder
             $userId = DB::table('users')->insertGetId([
                 'name' => $user['name'],
                 'email' => $user['email'],
-                'biographie' => $user['bio'] ,
+                'biographie' => $user['bio'],
                 'profile' => $user['avatar'],
                 'password' => $user['password'],
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
             $userIds[] = $userId;
-
-            // Insertion du profil utilisateur
-        /*    DB::table('profiles')->insert([
-                'user_id' => $userId,
-                'bio' => $user['profile']['bio'],
-                'avatar' => $user['profile']['avatar'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);*/
         }
 
         // Liste des histoires avec leurs titres, résumés et couvertures
@@ -127,50 +116,55 @@ class DemoSeeder extends Seeder
         // Liste des chapitres avec leurs titres et contenu
         $chapters = [
             [
-                'titre' => 'Chapitre 1: Le Début',
+                'titre' => 'Chapitre 1: Le Début de l\'Aventure',
                 'content' => json_encode([
-                    ["insert" => "Il était une fois...\n\n"],
-                    ["insert" => "Dans un monde lointain, une quête commença.\n\n"],
+                    ["insert" => "Il était une fois, dans un royaume lointain, un jeune héros nommé Éric.\n\n"],
+                    ["insert" => "Éric vivait dans un petit village entouré de forêts mystérieuses.\n\n"],
                     ["insert" => ["image" => "https://res.cloudinary.com/dkowocn8y/image/upload/v1739115646/images/fctc6ftoceyq9u1j64fq.jpg"]],
                     ["insert" => "\n\n"],
+                    ["insert" => "Un jour, il découvrit une vieille carte menant à un royaume oublié.\n\n"],
                 ]),
             ],
             [
-                'titre' => 'Chapitre 2: La Rencontre',
+                'titre' => 'Chapitre 2: La Rencontre Fatidique',
                 'content' => json_encode([
-                    ["insert" => "Les héros se rencontrèrent dans une auberge.\n\n"],
-                    ["insert" => "Leur destin était scellé.\n\n"],
+                    ["insert" => "Sur le chemin, Éric rencontra une mystérieuse guerrière nommée Lila.\n\n"],
+                    ["insert" => "Ensemble, ils décidèrent de poursuivre la quête.\n\n"],
                     ["insert" => ["image" => "https://res.cloudinary.com/dkowocn8y/image/upload/v1739126950/images/ok7mk62vwbmvcjejxbe9.jpg"]],
                     ["insert" => "\n\n"],
+                    ["insert" => "Leur voyage les mena à travers des montagnes et des rivières.\n\n"],
                 ]),
             ],
             [
-                'titre' => 'Chapitre 3: Le Combat',
+                'titre' => 'Chapitre 3: Le Combat contre les Ombres',
                 'content' => json_encode([
-                    ["insert" => "Le combat fut long et épuisant.\n\n"],
-                    ["insert" => "Mais la victoire était à portée de main.\n\n"],
+                    ["insert" => "Dans une sombre forêt, ils furent attaqués par des créatures obscures.\n\n"],
+                    ["insert" => "Le combat fut long et épuisant, mais ils réussirent à vaincre leurs ennemis.\n\n"],
                     ["insert" => ["image" => "https://res.cloudinary.com/dkowocn8y/image/upload/v1739115646/images/fctc6ftoceyq9u1j64fq.jpg"]],
                     ["insert" => "\n\n"],
+                    ["insert" => "Après cette épreuve, ils se sentirent plus forts et plus unis.\n\n"],
                 ]),
             ],
             [
-                'titre' => 'Chapitre 4: La Conclusion',
+                'titre' => 'Chapitre 4: La Découverte du Royaume Oublié',
                 'content' => json_encode([
-                    ["insert" => "Et ainsi, l\'histoire trouva sa fin.\n\n"],
-                    ["insert" => "Mais une nouvelle aventure commença.\n\n"],
+                    ["insert" => "Enfin, ils atteignirent les ruines du royaume oublié.\n\n"],
+                    ["insert" => "Ils découvrirent des trésors et des secrets anciens.\n\n"],
                     ["insert" => ["image" => "https://res.cloudinary.com/dkowocn8y/image/upload/v1739118295/images/jzjm9asrikvx39u8qdca.jpg"]],
                     ["insert" => "\n\n"],
+                    ["insert" => "Mais leur aventure ne faisait que commencer...\n\n"],
                 ]),
             ],
         ];
 
         // Insertion des chapitres
         foreach ($storyIds as $storyId) {
+            $chapterNumber = 1;
             foreach ($chapters as $chapter) {
                 DB::table('chapitres')->insert([
                     'histoire_id' => $storyId,
                     'statut' => 'Publier',
-                    'numero' => rand(1, 10),
+                    'numero' => $chapterNumber,
                     'titre' => $chapter['titre'],
                     'content' => $chapter['content'],
                     'vues' => rand(0, 100),
@@ -178,6 +172,7 @@ class DemoSeeder extends Seeder
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
+                $chapterNumber++;
             }
         }
 
@@ -230,5 +225,4 @@ class DemoSeeder extends Seeder
             ]);
         }
     }
-    
 }
