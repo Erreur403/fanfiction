@@ -353,60 +353,7 @@ public function getOtherChapterWithStory($id, Request $request)
 
 
 
-/*public function getOtherChapterWithStory($id, Request $request)
-{
-    try {
-        // Récupérer le chapitre par son ID
-        $chapitre = Chapitre::find($id);
 
-        // Vérifier si le chapitre existe
-        if (!$chapitre) {
-            return response()->json([
-                'message' => 'Chapitre introuvable.',
-            ], 404); // 404 Not Found
-        }
-
-        // Récupérer l'histoire associée au chapitre
-       // $histoire = $chapitre->histoire;
-       $histoire = Histoire::find($id);
-
-        // Vérifier si l'histoire existe
-        if (!$histoire) {
-            return response()->json([
-                'message' => 'Histoire introuvable pour ce chapitre.',
-            ], 404); // 404 Not Found
-        }
-
-        // Récupérer les informations de l'histoire
-        $histoireData = [
-            'id' => $histoire->id,
-            'titre' => $histoire->titre,
-            'couverture' => $histoire->couverture,
-        ];
-
-        // Récupérer les autres chapitres publiés de cette histoire (sauf le chapitre actuel)
-        $autresChapitres = Chapitre::where('histoire_id', $histoire->id)
-            ->where('statut', 'Publier') // Filtrer par statut "publié"
-            ->select('id', 'numero', 'titre') // Sélectionner uniquement les champs nécessaires
-            ->orderBy('numero') // Trier par numéro de chapitre
-            ->get();
-
-        // Retourner les données au format JSON
-        return response()->json([
-            'message' => 'Données récupérées avec succès.',
-            'data' => [
-                'histoire' => $histoireData,
-                'chapitres' => $autresChapitres,
-            ],
-        ], 200); // 200 OK
-    } catch (\Exception $e) {
-        // Gérer toute erreur
-        return response()->json([
-            'message' => 'Erreur lors de la récupération des données.',
-            'error' => $e->getMessage(),
-        ], 500); // 500 Internal Server Error
-    }
-}*/
 
 //fin gael
 }

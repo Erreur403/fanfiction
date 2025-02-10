@@ -154,14 +154,5 @@ class CommentaireController extends Controller
     }
 }
 
-  /*  public function test(String $chapitreId)
-{
-    $comments = Commentaire::where('chapitre_id', $chapitreId)
-        ->whereNull('commentaire_parent_id') // Uniquement les commentaires principaux
-        ->with('recursive') // Charger les enfants récursivement
-        ->get();
 
-        dd($comments);
-    return response()->json($comments);
-}*/
 
