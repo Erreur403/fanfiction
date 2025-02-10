@@ -183,6 +183,10 @@ class DemoSeeder extends Seeder
         $categories = [
             ['nom' => 'Aventure', 'created_at' => now(), 'updated_at' => now()],
             ['nom' => 'Romance', 'created_at' => now(), 'updated_at' => now()],
+            ['nom' => 'Drama', 'created_at' => now(), 'updated_at' => now()],
+            ['nom' => 'Science-fiction', 'created_at' => now(), 'updated_at' => now()],
+            ['nom' => 'Horreur', 'created_at' => now(), 'updated_at' => now()],
+            ['nom' => 'Isekai', 'created_at' => now(), 'updated_at' => now()],
             ['nom' => 'Fantastique', 'created_at' => now(), 'updated_at' => now()],
         ];
         DB::table('categories')->insert($categories);
